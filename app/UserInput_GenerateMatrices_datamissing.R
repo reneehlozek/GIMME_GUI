@@ -1,3 +1,4 @@
+# GUI for Generating Time Series Matrices with Missing Data, based on Chaku R simulations where observations are dropped
 # Required libraries
 library(shiny)
 library(ggplot2)
