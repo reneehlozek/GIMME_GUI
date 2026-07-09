@@ -223,7 +223,8 @@ ts.generate.asw <- function (mat, lvl, t,dens,cnt.group,lag.group,con.b,lag.b,p.
       
       
       regen <-check_reverse_offdiagonal(A)
-      
+      print('A')
+      print(regen)
      
       while (regen==TRUE){
         
@@ -251,8 +252,8 @@ ts.generate.asw <- function (mat, lvl, t,dens,cnt.group,lag.group,con.b,lag.b,p.
         lag.b <- s$shuffle(lagtest)[1]
         Phi[indices.Phi[row.col.Phi,]] <- lag.b 
         regen <-check_reverse_offdiagonal(Phi)
-        #print('we need to regen lag')
-        #print(lag.b)
+        print('we need to regen lag')
+        print(lag.b)
         }
       
       nonoisepaths  <- cbind(Phi, A) ### bind Phi and A before adding noise to them to check
@@ -299,7 +300,7 @@ ts.generate.asw <- function (mat, lvl, t,dens,cnt.group,lag.group,con.b,lag.b,p.
 
 # enter simulation parameters
 v             <- c(6) # Number of variables
-n             <- c(1) # number of individuals
+n             <- c(100) # number of individuals
 t             <- c(200) # Number of time points
 rep           <- seq(1) # replications per condition 
 ar            <-c(.6) # ar paths to try
@@ -325,11 +326,11 @@ all$ar         <- as.numeric(as.character(all$ar))
 
 
 # name directories to place simulated data in (Change)
-dir.create('/Users/reneehlozek/Dropbox/CIFAR_Sims/14012026_Missing')
-data.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/14012026_Missing/data'
-true.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/14012026_Missing/true'
-true_noisefree.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/14012026_Missing/true_noisefree'
-level.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/14012026_Missing/levels'
+dir.create('/Users/reneehlozek/Dropbox/CIFAR_Sims/29012026_Missing')
+data.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/29012026_Missing/data'
+true.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/29012026_Missing/true'
+true_noisefree.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/29012026_Missing/true_noisefree'
+level.path <- '/Users/reneehlozek/Dropbox/CIFAR_Sims/29012026_Missing/levels'
 
 dir.create(data.path)
 dir.create(true.path)
@@ -389,7 +390,7 @@ for (i in 1:nrow(all)){
       ### Code for missing data
       
       
-      drop_pct_row <-  0.30                #Natasha added missingness (row-level)
+      drop_pct_row <-  0.20                #Natasha added missingness (row-level)
       target_median_block <- 2            #days in a row
       
       n_rows <- nrow(out$series)

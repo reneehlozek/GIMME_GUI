@@ -91,11 +91,11 @@ ui <- fluidPage(
         textAreaInput("group_indices_lag", "Group-level Lagged Paths (row,col pairs)", placeholder = "1,2; 3,4")
       ),
       
-      numericInput("group_lag_beta", "Group-level Lagged Beta:", value = 0.3),
-      numericInput("group_lag_sd", "Group-level Lagged Beta SD:", value = 0.01),
+      numericInput("group_lag_beta", "Group-level Lagged Coeff:", value = 0.3),
+      numericInput("group_lag_sd", "Group-level Lagged Coeff error:", value = 0.01),
       
-      numericInput("indiv_lag_beta", "Individual-level Lagged Beta:", value = 0.3),
-      numericInput("indiv_lag_sd", "Individual-level Lagged Beta SD:", value = 0.01),
+      numericInput("indiv_lag_beta", "Individual-level Lagged Coeff:", value = 0.3),
+      numericInput("indiv_lag_sd", "Individual-level Lagged Coeff error:", value = 0.01),
       
       hr(),
       h3("Contemporaneous Matrix (A)"),
@@ -108,15 +108,15 @@ ui <- fluidPage(
         textAreaInput("group_indices_con", "Group-level Contemporaneous Paths (row,col pairs)", placeholder = "1,2; 2,3")
       ),
       
-      numericInput("group_con_beta", "Group-level Contemporaneous Beta:", value = 0.3),
-      numericInput("group_con_sd", "Group-level Contemporaneous Beta SD:", value = 0.01),
+      numericInput("group_con_beta", "Group-level Contemporaneous Coeff:", value = 0.3),
+      numericInput("group_con_sd", "Group-level Contemporaneous Coeff error:", value = 0.01),
       
-      numericInput("indiv_con_beta", "Individual-level Contemporaneous Beta:", value = 0.3),
-      numericInput("indiv_con_sd", "Individual-level Contemporaneous Beta SD:", value = 0.01),
+      numericInput("indiv_con_beta", "Individual-level Contemporaneous Coeff:", value = 0.3),
+      numericInput("indiv_con_sd", "Individual-level Contemporaneous Coeff error:", value = 0.01),
       
       hr(),
       h3("Timeseries Noise Settings"),
-      numericInput("overall_noise", "Overall Timeseries Noise SD:", value = 0.1, min = 0),
+      numericInput("overall_noise", "Overall Timeseries Noise error:", value = 0.1, min = 0),
       numericInput("drop_pct_row", "Percentage of days dropped (%):", value = 25, min = 0),
       numericInput("target_median_block", "Median number of days dropped in a row:", value = 2, min = 0), 
       numericInput("drop_pct_random", "Percentage of observations where random variables are dropped (%):", value = 5, min = 0), 
