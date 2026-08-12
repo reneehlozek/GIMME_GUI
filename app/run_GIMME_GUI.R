@@ -9,15 +9,14 @@ library(shinyBS)
 library(shinyFiles)
 library(SyncRNG)
 
+
 # Initialize random number generators
 seed <- 163422312
 set.seed(seed)
 s <- SyncRNG(seed = seed)
 universal_rng <- SyncRNG(seed = seed)
 
-#######################################################
-#### 1. Simulation Functions (from working code) ######
-#######################################################
+##Needed functions to support simulations
 
 syncrng.box.muller <- function(mu, sigma, n, seed = 0, rng = NULL) {
   # Code to ensure that we can have simultaneous random generation from python and/or R
@@ -315,44 +314,40 @@ add_missing_data <- function(series, drop_pct_row = 0.20, target_median_block = 
   return(series)
 }
 
-#######################################################
-#### 2. Shiny UI ######################################
-#######################################################
+## Shiny GUI
 
 ui <- fluidPage(
-  titlePanel("Time Series Matrix Simulator"),
+  
+  tags$head(
+    tags$style(HTML("
+    .tooltip-inner {
+      max-width: 150px;
+    }
+  "))
+  ),
+
+    titlePanel(
+    div(
+      h2("GIMME Time Series Matrix Simulator"),
+      span("This app is to generate matrices and time series within the Group Iterative Multiple Model Estimation (GIMME) Framework. The simulations can be run for a number of repetitions and people in the study. More detail about GIMME and the simulation framework is included in the manual.", style = "font-size: 15px; color: gray; line-height: 0.8; letter-spacing: -0.2px;"))),
+  
   
   sidebarLayout(
     sidebarPanel(
-      numericInput("n_people", "Number of People in Study:", value = 10, min = 1),
+      numericInput("n_people", "Number of People in Study (N):", value = 10, min = 1),
+      bsTooltip("n_people", "Note that, for GIMME, time steps should be spaced at approximately equivalent intervals.", "right", options = list(container = "body")),
       numericInput("time_steps", "Number of Time Steps:", value = 200, min = 1),
-      numericInput("n_vars", "Number of Variables (N):", value = 6, min = 2),
-      bsTooltip("n_vars", "Contemporaneous total = N*(N-1), Lagged total = N*N.", "right", options = list(container = "body")),
+      numericInput("n_vars", "Number of Variables (p):", value = 6, min = 2),
+      bsTooltip("n_vars", "These are the columns in our time series. Contemporaneous total connections = p*(p-1), Lagged total connections = p*p.", "right", options = list(container = "body")),
       
       numericInput("network_density", "Total Network Density (%)", value = 20, min = 0, max = 100),
-      bsTooltip("network_density", "Percent of total possible paths (contemp + lagged) that are active.", "right", options = list(container = "body")),
+      bsTooltip("network_density", "Percent of total possible paths (contemporaneous and lagged) that are present. Most GIMME networks have roughly 30% density.", "center", options = list(container = "body")),
       
       numericInput("cnt_group", "Proportion of Contemp Paths that are Group-level (%)", value = 10, min = 0, max = 100),
-      
+      bsTooltip("cnt_group", "Group-Level paths are estimated for all N.", "center", options = list(container = "body")),
       numericInput("lag_group", "Proportion of Lagged Paths that are Group-level (%)", value = 30, min = 0, max = 100),
+      bsTooltip("lag_group", "Group-Level paths are estimated for all N.", "center", options = list(container = "body")),
       # lag_group not used!
-      hr(),
-      h3("Lagged Matrix (Φ)"),
-      
-      textAreaInput("ar_paths", "User-defined AR Paths (row,col pairs)", placeholder = "1,1; 2,2; 3,3"),
-      numericInput("ar_coeff", "AR Coefficient:", value = 0.6, step = 0.1),
-      
-      radioButtons("group_model_lag", "Group-level Path Model (Lagged):",
-                   choices = c("Random" = "random", "User-specified" = "confirm")),
-      
-      conditionalPanel(
-        condition = "input.group_model_lag == 'confirm'",
-        textAreaInput("group_indices_lag", "Group-level Lagged Paths (row,col pairs)", placeholder = "1,2; 3,4")
-      ),
-      
-      numericInput("lag_beta", "Lagged Path Coefficient:", value = 0.45, step = 0.05),
-      checkboxInput("lag_negative", "Include negative lagged coefficients", value = TRUE),
-      
       hr(),
       h3("Contemporaneous Matrix (A)"),
       
@@ -368,11 +363,36 @@ ui <- fluidPage(
       checkboxInput("con_negative", "Include negative contemp coefficients", value = TRUE),
       
       hr(),
+      h3("Lagged Matrix (Φ)"),
+      
+      textAreaInput("ar_paths", "User-defined AR Paths (row,col pairs)", placeholder = "1,1; 2,2; 3,3"),
+      bsTooltip("ar_paths", "Autoregressive paths are on the diagonal of Φ.", "center", options = list(container = "body")),
+      numericInput("ar_coeff", "AR Coefficient:", value = 0.6, step = 0.1),
+      
+      radioButtons("group_model_lag", "Group-level Path Model (Lagged):",
+                   choices = c("Random" = "random", "User-specified" = "confirm")),
+      
+      conditionalPanel(
+        condition = "input.group_model_lag == 'confirm'",
+        textAreaInput("group_indices_lag", "Group-level Lagged Paths (row,col pairs)", placeholder = "1,2; 3,4")
+      ),
+      
+      numericInput("lag_beta", "Lagged Path Coefficient:", value = 0.45, step = 0.05),
+      bsTooltip("lag_beta", "Paths other than autoregressive (AR) paths.", "center", options = list(container = "body")),
+      checkboxInput("lag_negative", "Include negative lagged coefficients", value = TRUE),
+      
+      
+      hr(),
       h3("Noise & Missing Data Settings"),
-      numericInput("coeff_noise_sd", "Coefficient Noise SD:", value = 0.01, min = 0, step = 0.01),
-      numericInput("drop_pct_row", "Percentage of days dropped (%):", value = 20, min = 0, max = 100),
-      numericInput("target_median_block", "Median number of days dropped in a row:", value = 2, min = 1),
+      numericInput("coeff_noise_sd", "Coefficient Noise (σ):", value = 0.01, min = 0, step = 0.01),
+      bsTooltip("coeff_noise_sd", "Variation added to each active variable.", "center", options = list(container = "body")),
+    
+      numericInput("drop_pct_row", "Percentage of time steps dropped (%):", value = 20, min = 0, max = 100),
+      bsTooltip("drop_pct_row", "Entire data rows will be missing.", "center", options = list(container = "body")),
+      
+      numericInput("target_median_block", "Median number of consecutive time steps to be dropped:", value = 2, min = 1),
       numericInput("drop_pct_random", "Random variable dropout (%):", value = 5, min = 0, max = 100),
+      bsTooltip("drop_pct_random", "Percent of observations (i.e., cells) within the matrix to be dropped, in addition to entire rows.", "center", options = list(container = "body")),
       
       hr(),
       h3("Output Settings"),
@@ -400,20 +420,22 @@ ui <- fluidPage(
       uiOutput("person_selector"),
       
       tabsetPanel(
+        
+        tabPanel("Group-level Matrices",
+                 #h4("Group-level Lagged Matrix (Φ)"),
+                 plotOutput("phi_group_plot", height = "450px"),
+                 #h4("Group-level Contemporaneous Matrix (A)"),
+                 plotOutput("a_group_plot", height = "450px")
+        ),
         tabPanel("Individual Matrices",
                  h4("Individual Lagged Matrix (Φ) - with noise"),
-                 plotOutput("phi_indiv_plot"),
+                 plotOutput("phi_indiv_plot", height = "450px"),
                  h4("Individual Contemporaneous Matrix (A) - with noise"),
-                 plotOutput("a_indiv_plot"),
+                 plotOutput("a_indiv_plot", height = "450px"),
                  h4("Path Levels (grp/ind)"),
-                 plotOutput("levels_plot")
+                 plotOutput("levels_plot", height = "450px")
         ),
-        tabPanel("Group-level Matrices",
-                 h4("Group-level Lagged Matrix (Φ)"),
-                 plotOutput("phi_group_plot"),
-                 h4("Group-level Contemporaneous Matrix (A)"),
-                 plotOutput("a_group_plot")
-        ),
+
         tabPanel("Time Series",
                  h4("Simulated Time Series (Selected Person)"),
                  plotOutput("ts_plot"),
@@ -433,9 +455,7 @@ ui <- fluidPage(
   )
 )
 
-#######################################################
-#### 3. Shiny Server ##################################
-#######################################################
+## Set up Shiny Server
 
 server <- function(input, output, session) {
   # Choose your home directory
@@ -701,22 +721,29 @@ server <- function(input, output, session) {
     
     melted$Var1 <- factor(melted$Var1, levels = rev(paste0("V", 1:n)))
     
+    base_theme <- theme_minimal(base_size = 16) +
+      theme(
+        axis.text.x  = element_text(angle = 45, hjust = 0, size = 14),
+        axis.text.y  = element_text(size = 14),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        legend.title = element_text(size = 14),
+        legend.text  = element_text(size = 12),
+        panel.grid   = element_blank(),
+        panel.border = element_rect(colour = "black", fill = NA),
+        plot.title   = element_text(size = 18, face = "bold", hjust = 0.5)
+      )
+    
     if (is.numeric(melted$value)) {
       ggplot(melted, aes(Var2, Var1, fill = value)) +
         geom_tile(color = "black") +
         geom_text(aes(label = label), size = 3) +
-        scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, na.value = "grey90") +
+        scale_fill_gradient2(low = "#0571B0", mid = "#F7F7F7", high = "#E66101",
+                             midpoint = 0, na.value = "grey90")  +
         labs(title = title) +
-        theme_minimal() +
-        theme(
-          axis.text.x = element_text(angle = 45, hjust = 0),
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank(),
-          panel.grid = element_blank(),
-          panel.border = element_rect(colour = "black", fill = NA),
-          plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
-        ) +
+        base_theme +
         scale_x_discrete(position = "top")
+
     } else {
       melted$value_factor <- factor(melted$value, levels = c("grp", "ind", NA))
       ggplot(melted, aes(Var2, Var1, fill = value_factor)) +
@@ -725,16 +752,9 @@ server <- function(input, output, session) {
         scale_fill_manual(values = c("grp" = "steelblue", "ind" = "coral", "NA" = "white"),
                           na.value = "white", name = "Level") +
         labs(title = title) +
-        theme_minimal() +
-        theme(
-          axis.text.x = element_text(angle = 45, hjust = 0),
-          axis.title.x = element_blank(),
-          axis.title.y = element_blank(),
-          panel.grid = element_blank(),
-          panel.border = element_rect(colour = "black", fill = NA),
-          plot.title = element_text(size = 14, face = "bold", hjust = 0.5)
-        ) +
+        base_theme +
         scale_x_discrete(position = "top")
+      
     }
   }
   
@@ -799,7 +819,7 @@ server <- function(input, output, session) {
       geom_line(na.rm = TRUE) +
       facet_wrap(~Person, ncol = 1, scales = "free_y") +
       labs(title = "Time Series Overview", y = "Value", x = "Time") +
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position = "bottom")
   })
   
