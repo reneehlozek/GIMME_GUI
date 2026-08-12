@@ -478,7 +478,7 @@ server <- function(input, output, session) {
   )
   
   
-  # ── Helper: run one full repetition ───────────────────────────────────────
+ 
   run_one_rep <- function(rep_idx, rep_seed, input) {
     
     set.seed(rep_seed)
