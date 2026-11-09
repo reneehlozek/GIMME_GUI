@@ -582,6 +582,19 @@ server <- function(input, output, session) {
     n_reps     <- input$n_reps
     base_seed  <- input$random_seed
     
+    # check for network density too high
+    dens <- input$network_density / 100
+    if (!is.na(dens) && dens > 0.5) {
+      showNotification(
+        paste0("Warning: Total Network Density is set to ", input$network_density,
+               "% (dens = ", round(dens, 3), "), which is greater than 50%. ",
+               "Most GIMME networks have roughly 30% density; very high density may ",
+               "produce unstable or unrealistic simulations."),
+        type = "warning",
+        duration = 10
+      )
+      warning(sprintf("Network density (dens = %.3f) is greater than 50%%.", dens))
+    }
     # Clear previous results
     sim_results$reps       <- list()
     sim_results$n_reps_done <- 0
